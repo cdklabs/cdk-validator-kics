@@ -49,3 +49,6 @@ junit.xml
 tsconfig.json
 !/API.md
 !/.github/workflows/auto-merge.yml
+bin
+assets
+!/.github/workflows/update-kics.yml

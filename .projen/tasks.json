@@ -24,6 +24,14 @@
         }
       ]
     },
+    "bundle-kics": {
+      "name": "bundle-kics",
+      "steps": [
+        {
+          "exec": "ts-node projenrc/bundle-kics.ts"
+        }
+      ]
+    },
     "clobber": {
       "name": "clobber",
       "description": "hard resets to HEAD of origin and cleans the local repo",
@@ -80,6 +88,9 @@
       "steps": [
         {
           "exec": "ts-node --project tsconfig.dev.json .projenrc.ts"
+        },
+        {
+          "spawn": "bundle-kics"
         }
       ]
     },
@@ -252,6 +263,17 @@
       "steps": [
         {
           "exec": "jest --watch"
+        }
+      ]
+    },
+    "update-kics": {
+      "name": "update-kics",
+      "steps": [
+        {
+          "exec": "ts-node projenrc/update-kics.ts"
+        },
+        {
+          "spawn": "bundle-kics"
         }
       ]
     },
