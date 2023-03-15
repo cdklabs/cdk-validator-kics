@@ -100,7 +100,7 @@ export class KicsValidator implements IValidationPlugin {
       const output: KicsSchema = JSON.parse(results);
 
       output.queries.forEach((query) => {
-        success = false;
+        success = this.failureSeverities.some((value) => value === query.severity);
         violations.push({
           fix: query.query_url,
           ruleName: query.query_name,
