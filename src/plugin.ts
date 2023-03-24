@@ -2,10 +2,10 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import {
-  IValidationPlugin,
-  IValidationContext,
-  ValidationViolationResourceAware,
-  ValidationPluginReport,
+  IPolicyValidationPluginBeta1,
+  IPolicyValidationContext,
+  PolicyViolation,
+  PolicyValidationPluginReport,
 } from 'aws-cdk-lib';
 import { KicsSchema, Severity, QueryCategory } from './private/schema';
 import { exec } from './utils';
@@ -53,7 +53,7 @@ export interface KicsValidatorProps {
 /**
  * A validation plugin using CFN Guard
  */
-export class KicsValidator implements IValidationPlugin {
+export class KicsValidator implements IPolicyValidationPluginBeta1 {
   public readonly name: string;
   private readonly kics: string;
   private readonly excludeQueries?: string[];
@@ -74,7 +74,7 @@ export class KicsValidator implements IValidationPlugin {
     this.kics = path.join(__dirname, '..', 'bin', `${platform}_${arch}`, platform.toString() === 'windows' ? 'kics.exe' : 'kics');
   }
 
-  validate(context: IValidationContext): ValidationPluginReport {
+  validate(context: IPolicyValidationContext): PolicyValidationPluginReport {
     const reportDir = fs.realpathSync(os.tmpdir());
     const reportPath = path.join(reportDir, this.name);
     const flags = [
@@ -93,19 +93,23 @@ export class KicsValidator implements IValidationPlugin {
       '--report-formats', '"json"',
     ];
     let success: boolean = true;
-    const violations: ValidationViolationResourceAware[] = [];
+    const violations: PolicyViolation[] = [];
     try {
       exec(flags);
       const results = fs.readFileSync(`${reportPath}.json`, { encoding: 'utf-8' });
       const output: KicsSchema = JSON.parse(results);
 
       output.queries.forEach((query) => {
-        success = this.failureSeverities.some((value) => value === query.severity);
+        success = !this.failureSeverities.some((value) => value.toUpperCase() === query.severity.toUpperCase());
         violations.push({
           fix: query.query_url,
           ruleName: query.query_name,
           description: query.description,
           severity: query.severity,
+          ruleMetadata: {
+            Category: query.category,
+            QueryId: query.query_id,
+          },
           violatingResources: query.files.map((file) => ({
             resourceLogicalId: file.resource_name,
             templatePath: path.join(path.dirname(file.file_name), path.basename(file.file_name)),

@@ -1,3 +1,5 @@
+import * as fs from 'fs';
+import * as path from 'path';
 import {
   App,
   // Stage,
@@ -6,16 +8,15 @@ import {
 } from 'aws-cdk-lib';
 import { KicsValidator, QueryCategory, Severity } from '../src/plugin';
 
-let consoleMock: jest.SpyInstance;
 
 beforeEach(() => {
-  consoleMock = jest.spyOn(console, 'log').mockImplementation(() => {});
+  jest.spyOn(console, 'log').mockImplementation(() => {});
 });
 describe('KicsValidator', () => {
   test('synth fails', () => {
     // GIVEN
     const app = new App({
-      validationPlugins: [
+      policyValidationBeta1: [
         new KicsValidator(),
       ],
       context: {
@@ -31,7 +32,7 @@ describe('KicsValidator', () => {
     expect(() => {
       app.synth();
     }).toThrow();
-    const report = consoleMock.mock.calls[0][0];
+    const report = fs.readFileSync(path.join(app.outdir, 'policy-validation.json')).toString('utf-8').trim();
     const jsonReport = JSON.parse(report);
     const rules = jsonReport.pluginReports.flatMap((r: any) => r.violations.flatMap((v: any) => v.ruleName));
     expect(rules).toEqual(expect.arrayContaining([
@@ -43,7 +44,7 @@ describe('KicsValidator', () => {
   test('synth succeeds', () => {
     // GIVEN
     const app = new App({
-      validationPlugins: [
+      policyValidationBeta1: [
         new KicsValidator({
           excludeQueries: [
             '64ab651b-f5b2-4af0-8c89-ddd03c4d0e61',

@@ -108,6 +108,10 @@ describe('KicsPlugin', () => {
         {
           description: 'Some description',
           fix: 'https://example.com',
+          ruleMetadata: {
+            Category: 'Encryption',
+            QueryId: 'abcdefg',
+          },
           ruleName: 'some query',
           severity: 'high',
           violatingResources: [
@@ -217,6 +221,7 @@ function getKicsResult(): KicsSchema {
     queries: [
       {
         category: plugin.QueryCategory.ENCRYPTION,
+        query_id: 'abcdefg',
         description: 'Some description',
         files: [
           {

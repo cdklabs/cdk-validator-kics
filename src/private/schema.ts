@@ -42,6 +42,11 @@ export interface QueryResult {
   readonly query_name: string;
 
   /**
+   * The unique identifier for the query
+   */
+  readonly query_id: string;
+
+  /**
    * The URL to the query documentation.
    *
    * This documentation should include
